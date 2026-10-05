@@ -11,7 +11,9 @@ if [ -f /var/www/html/artisan ] && [ -f /var/www/html/vendor/autoload.php ]; the
     php artisan serve --host=0.0.0.0 --port=8000 &
 fi
 
-if [ -f /var/www/html/package.json ]; then
+frontend_mode=$(cat /var/www/html/.laravel-frontend 2>/dev/null || printf '%s' 'vite')
+
+if [ "$frontend_mode" != "blade" ] && [ -f /var/www/html/package.json ]; then
     (
         cd /var/www/html
         npm install --no-audit --no-fund
