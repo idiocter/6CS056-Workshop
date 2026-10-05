@@ -3,27 +3,75 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class StudentController extends Controller
 {
-    public function showForm()
+    public function index(): View
     {
-        return view('student-form');
+        return view('students.index', [
+            'students' => Student::latest()->get(),
+        ]);
     }
 
-    public function submitForm(Request $request)
+    public function create(): View
     {
-        $name = $request->name;
-        $email = $request->email;
-        $age = $request->age;
+        return view('students.create');
+    }
 
-        Student::create([
-            'name' => $name,
-            'email' => $email,
-            'age' => $age,
+    public function store(Request $request): RedirectResponse
+    {
+        $student = Student::create($this->validatedData($request));
+
+        return redirect()
+            ->route('students.index')
+            ->with('success', "Student {$student->name} created successfully!");
+    }
+
+    public function show(Student $student): View
+    {
+        return view('students.show', compact('student'));
+    }
+
+    public function edit(Student $student): View
+    {
+        return view('students.edit', compact('student'));
+    }
+
+    public function update(Request $request, Student $student): RedirectResponse
+    {
+        $student->update($this->validatedData($request, $student));
+
+        return redirect()
+            ->route('students.show', $student)
+            ->with('success', 'Student updated successfully!');
+    }
+
+    public function destroy(Student $student): RedirectResponse
+    {
+        $student->delete();
+
+        return redirect()
+            ->route('students.index')
+            ->with('success', 'Student deleted successfully!');
+    }
+
+    private function validatedData(Request $request, ?Student $student = null): array
+    {
+        return $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                Rule::unique('students', 'email')->ignore($student),
+            ],
+            'phone' => ['required', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
         ]);
-
-        return 'Student information saved successfully!';
     }
 }

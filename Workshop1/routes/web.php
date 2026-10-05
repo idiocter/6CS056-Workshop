@@ -1,11 +1,10 @@
 <?php
 
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [StudentController::class, 'index']);
 
-Route::post('/student', [StudentController::class, 'submitForm']);
-Route::get('/student', [StudentController::class, 'showForm']);
+Route::resource('students', StudentController::class);
+Route::resource('courses', CourseController::class);
