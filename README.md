@@ -1,226 +1,92 @@
 # Advanced Full Stack Development
 
-This folder contains separate Laravel workshop projects. Everything runs with Docker, so you do not need XAMPP, a local PHP installation, or MySQL Workbench.
-
-## 1. Install the required applications
-
-Install:
-
-- Docker Desktop
-- Visual Studio Code
-- DBeaver Community
-
-On this Mac, DBeaver was installed with:
-
-```bash
-brew install --cask dbeaver-community
-```
-
-Open it with:
-
-```bash
-open -a DBeaver
-```
-
-Check Docker before creating a project:
-
-```bash
-docker --version
-docker compose version
-```
-
-Docker Desktop must be running.
-
-## 2. Create a Laravel project
-
-Go to this main folder:
-
-```bash
-cd ~/Documents/Herald_Sem_5/Adv_Fullstack
-```
-
-Create a Blade-only project using one exact folder name:
-
-```bash
-./laravel-create Workshop2 --blade
-```
-
-Available frontend choices:
+Laravel coursework is grouped by type. The `main` branch is the complete collection.
 
 ```text
---blade
---vite
---react
---vue
---svelte
---livewire
+Adv_Fullstack/
+├── Tutorials/
+│   ├── Tutorial-1/
+│   ├── Tutorial2/
+│   └── Tutorial3-Starter/
+└── Workshops/
+    ├── Workshop1/
+    └── Workshop2/
 ```
 
-Examples:
+## Local setup
+
+This Mac uses native PHP, Composer and MySQL. DBeaver is the database client. Confirm the commands are available before starting:
 
 ```bash
-./laravel-create Workshop2 --vite
-./laravel-create Workshop3 --react
-./laravel-create Workshop4 --vue
+php --version
+composer --version
+brew services list
 ```
 
-You can also omit the frontend option and select it interactively:
+If MySQL is stopped, run:
 
 ```bash
-./laravel-create Workshop2
+brew services start mysql@8.4
 ```
 
-The option is explicit for every project:
+## Create a project
 
-- `--blade` uses Blade views and does not start the Vite development server.
-- `--vite` uses the standard Laravel project and starts Vite for CSS and JavaScript assets.
-- `--react`, `--vue`, and `--svelte` install that frontend starter kit and run it through Vite.
-- `--livewire` installs the Livewire starter kit and starts its asset tooling.
-
-Blade is Laravel's server-rendered template system. Vite is an asset development server, so they are not technically competing frameworks; a Laravel project can use Blade templates and Vite assets together. These flags let you explicitly decide whether Vite should run for that workshop.
-
-Do not write `Workshop1/2`; that means a nested path. Use `Workshop1` or `Workshop2`.
-
-The creator uses a temporary lightweight Composer container to download Laravel. It then adds the Docker configuration to the new project. It does not install PHP, Composer, Node, or MySQL directly on your Mac.
-
-## 3. Start the project
+Run the creator from the repository root. The project name determines its folder:
 
 ```bash
-cd Workshop2
-docker compose up -d --build
+./laravel-create.sh Workshop3 --blade
+./laravel-create.sh Tutorial4 --blade
 ```
 
-The word `up` is required. `docker compose -d --build` is not a valid command.
+These commands create `Workshops/Workshop3` and `Tutorials/Tutorial4`. The script also works when called from another directory because it resolves the repository root from its own location.
 
-The first start builds the Ubuntu development image. Later, normally use:
+Available choices are `--blade`, `--vite`, `--react`, `--vue`, `--svelte` and `--livewire`. Leave the choice out to use the interactive menu.
+
+Start a project with:
 
 ```bash
-docker compose up -d
+cd Workshops/Workshop3
+php artisan serve
 ```
 
-The container automatically starts Laravel. It starts Vite only when the project was created with `--vite`, `--react`, `--vue`, `--svelte`, or `--livewire`. MySQL and Mailpit also start automatically.
+For a project that uses frontend assets, run `npm install` once and use `npm run dev` in another terminal.
 
-## 4. Open the services
+## MySQL and DBeaver
 
-| Service | Address |
-| --- | --- |
-| Laravel | http://localhost:8000 |
-| Vite, when selected | http://localhost:5173 |
-| Mailpit | http://localhost:8025 |
-| MySQL | localhost:3306 |
-| SSH | localhost:2222 |
+Use a separate database for each project. A typical Laravel `.env` configuration on this Mac is:
 
-Only one workshop can use these default ports at a time. Stop the current workshop before starting another one.
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=workshop3
+DB_USERNAME=laravel
+DB_PASSWORD=laravel
+```
 
-## 5. Daily commands
-
-Run these inside the workshop folder:
+Create the database before migrating, then run:
 
 ```bash
-docker compose up -d
-docker compose ps
-docker compose logs -f app
-docker compose down
+php artisan migrate
 ```
 
-After changing the Dockerfile:
+In DBeaver, create a MySQL connection using host `localhost`, port `3306`, username `laravel`, password `laravel`, and the database name from that project's `.env` file. `.env` files are local and must not be committed.
+
+## Git workflow
+
+`main` keeps every completed tutorial and workshop. Use one branch for the work on each new workshop:
 
 ```bash
-docker compose up -d --build
+git switch main
+git pull --ff-only
+git switch -c Workshop3
+./laravel-create.sh Workshop3 --blade
+git add Workshops/Workshop3
+git commit -m "Complete Workshop 3"
+git switch main
+git merge --no-ff Workshop3
 ```
 
-Run Laravel commands:
+The branch inherits the existing collection from `main`, but its changes stay limited to its own workshop folder. After merging, `main` contains the new workshop as well as all earlier work. Follow the same pattern with branches such as `Tutorial4` and paths such as `Tutorials/Tutorial4`.
 
-```bash
-docker compose exec app php artisan migrate
-docker compose exec app php artisan make:controller ExampleController
-docker compose exec app php artisan test
-```
-
-Open a shell in the app container:
-
-```bash
-docker compose exec app bash
-```
-
-## 6. SSH into the Ubuntu container
-
-```bash
-ssh -p 2222 developer@localhost
-```
-
-Password:
-
-```text
-developer
-```
-
-The Laravel code is mounted at:
-
-```text
-/var/www/html
-```
-
-Editing files in the container or on your Mac changes the same project files.
-
-## 7. Configure DBeaver
-
-Start the workshop first:
-
-```bash
-docker compose up -d
-```
-
-In DBeaver:
-
-1. Select **Database > New Database Connection**.
-2. Choose **MySQL**.
-3. Enter these values:
-
-| Setting | Value |
-| --- | --- |
-| Host | localhost |
-| Port | 3306 |
-| Database | laravel |
-| Username | laravel |
-| Password | password |
-
-4. Select **Test Connection**.
-5. Allow DBeaver to download the MySQL driver if prompted.
-6. Select **Finish**.
-
-DBeaver connects to the MySQL container through port 3306. You do not need MySQL Workbench.
-
-## 8. Troubleshooting
-
-Check whether the containers are running:
-
-```bash
-docker compose ps
-```
-
-Check the app logs:
-
-```bash
-docker compose logs app
-```
-
-If a port is already in use, stop the other workshop:
-
-```bash
-cd ~/Documents/Herald_Sem_5/Adv_Fullstack/Workshop1
-docker compose down
-```
-
-Then return to the workshop you want and start it:
-
-```bash
-docker compose up -d
-```
-
-For a clean rebuild:
-
-```bash
-docker compose down
-docker compose up -d --build
-```
+The existing `Workshop1` and `Workshop2` branches are retained as isolated workshop snapshots. Do not force-push rewritten branch history unless you intentionally want to replace the corresponding remote branch.
