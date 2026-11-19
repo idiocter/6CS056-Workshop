@@ -2,6 +2,12 @@
 
 A Blade-based Training Institute Management System built with Laravel 13. The application provides complete CRUD workflows for students and courses, using resource controllers, route model binding, shared validation rules, Blade layouts, partials, and reusable components.
 
+## Production
+
+[Open Workshop 2](https://workshop-2-production.up.railway.app)
+
+The Railway deployment uses MySQL and the `w2_` table prefix. The Free plan sleeps when idle, so the first request can take a few seconds.
+
 ## Run with Docker
 
 Docker Desktop must be running. From this folder:

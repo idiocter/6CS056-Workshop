@@ -13,6 +13,13 @@ Adv_Fullstack/
     └── Workshop2/
 ```
 
+## Production deployments
+
+- [Workshop 1](https://workshop-1-production.up.railway.app)
+- [Workshop 2](https://workshop-2-production.up.railway.app)
+
+Both applications run on Railway's Free plan. They use one MySQL service with isolated table prefixes: `w1_` for Workshop 1 and `w2_` for Workshop 2. Free services sleep when idle, so the first request can take a few seconds.
+
 ## Local setup
 
 This Mac uses native PHP, Composer and MySQL. DBeaver is the database client. Confirm the commands are available before starting:
